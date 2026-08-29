@@ -49,19 +49,26 @@ window.onload = function() {
   fetch(url)
     .then(res => res.json())
     .then(data => {
-      // SheetBest trả về trực tiếp danh sách tên cột dạng chữ
-dataList = data.map(item => ({
-  maDV: item["MÃ ĐƠN VỊ"] || "",
-  tenDV: item["TÊN ĐƠN VỊ"] || "",
-  diaChi: item["ĐỊA CHỈ LH"] || "",
-  mst: item["MST"] || "",
-  ngayTang: item["NGÀY TĂNG"] || "",
-  chuyenQuan: item["CHUYÊN QUẢN THU"] || "", // Thêm chữ THU vào đây
-  sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
-}));
-      console.log("Đã tải xong dữ liệu:", dataList);
+      dataList = data.map(item => ({
+        maDV: item["MÃ ĐƠN VỊ"] || "",
+        tenDV: item["TÊN ĐƠN VỊ"] || "",
+        diaChi: item["ĐỊA CHỈ LH"] || "",
+        mst: item["MST"] || "",
+        ngayTang: item["NGÀY TĂNG"] || "",
+        chuyenQuan: item["CHUYÊN QUẢN THU"] || "",
+        sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
+      }));
+      
+      // Xóa dòng đang tải và báo sẵn sàng
+      let resultsDiv = document.getElementById("results");
+      resultsDiv.innerHTML = `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị. Hãy nhập thông tin để tìm kiếm!</p>`;
+      
+      console.log("Đã tải xong dữ liệu:", dataList.length);
     })
-    .catch(err => console.error("Lỗi lấy dữ liệu:", err));
+    .catch(err => {
+      console.error("Lỗi lấy dữ liệu:", err);
+      document.getElementById("results").innerHTML = "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng thử lại sau.</p>";
+    });
 };
 
   // Hàm searchData() giữ nguyên như cũ
