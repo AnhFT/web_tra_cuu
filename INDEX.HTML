@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tra cứu thông tin đơn vị</title>
+  <style>
+    body { font-family: sans-serif; background-color: #f8fafc; padding: 20px; }
+    .card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; }
+    .title { font-size: 20px; font-weight: bold; margin-bottom: 8px; }
+    .subtitle { color: #64748b; font-size: 14px; margin-bottom: 16px; }
+    .search-input { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 999px; font-size: 15px; box-sizing: border-box; }
+    .status-date { color: #64748b; font-size: 13px; font-style: italic; }
+    .result-item { border-bottom: 1px solid #e2e8f0; padding: 10px 0; }
+  </style>
+</head>
+<body>
+
+  <h2>🔍 Tra cứu thông tin đơn vị</h2>
+
+  <div class="card">
+    <div class="header">
+      <div class="title">Nhập thông tin cần tìm</div>
+      <div class="status-date">📅 Dữ liệu cập nhật: <span id="lastUpdate">29/08/2026 09:20</span></div>
+    </div>
+    
+    <div class="subtitle">
+      Tìm theo Mã đơn vị _ Tên đơn vị _ Mã số thuế _ Số điện thoại _ Tên hoặc SĐT Chuyên quản Thu:
+    </div>
+
+    <!-- Ô NHẬP TÌM KIẾM (Gọi hàm searchData() mỗi khi gõ phím) -->
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Nhập từ khóa tìm kiếm..." onkeyup="searchData()">
+
+    <!-- KHU VỰC HIỂN THỊ KẾT QUẢ TÌM KIẾM -->
+    <div id="results" style="margin-top: 20px;"></div>
+  </div>
+
+  <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
+ <script>
+  let dataList = [];
+
+  const url = `https://api.sheetbest.com/sheets/43051695-bfae-41a8-ae94-0e4157bb5b4a`;
+
+window.onload = function() {
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      // SheetBest trả về trực tiếp danh sách tên cột dạng chữ
+      dataList = data.map(item => ({
+        maDV: item["MÃ ĐƠN VỊ"] || "",
+        tenDV: item["TÊN ĐƠN VỊ"] || "",
+        diaChi: item["ĐỊA CHỈ LH"] || "",
+        mst: item["MST"] || "",
+        ngayTang: item["NGÀY TĂNG"] || "",
+        chuyenQuan: item["CHUYÊN QUẢN"] || "",
+        sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
+      }));
+      console.log("Đã tải xong dữ liệu:", dataList);
+    })
+    .catch(err => console.error("Lỗi lấy dữ liệu:", err));
+};
+
+  // Hàm searchData() giữ nguyên như cũ
+  function searchData() {
+  let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+  let resultsDiv = document.getElementById("results");
+  
+  if (keyword === "") {
+    resultsDiv.innerHTML = "";
+    return;
+  }
+
+  // Lọc dữ liệu qua tất cả các thuộc tính đã map từ SheetBest
+  let filtered = dataList.filter(item => 
+    (item.maDV && item.maDV.toLowerCase().includes(keyword)) ||
+    (item.tenDV && item.tenDV.toLowerCase().includes(keyword)) ||
+    (item.diaChi && item.diaChi.toLowerCase().includes(keyword)) ||
+    (item.mst && item.mst.toLowerCase().includes(keyword)) ||
+    (item.ngayTang && item.ngayTang.toLowerCase().includes(keyword)) ||
+    (item.chuyenQuan && item.chuyenQuan.toLowerCase().includes(keyword)) ||
+    (item.sdtCQ && item.sdtCQ.toLowerCase().includes(keyword))
+  );
+
+  if (filtered.length === 0) {
+    resultsDiv.innerHTML = "<p style='color: red; margin-top: 15px;'>Không tìm thấy đơn vị phù hợp.</p>";
+  } else {
+    let html = "";
+    filtered.forEach(item => {
+      html += `
+        <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
+          <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
+          <span style="font-size: 14px;"><b>Mã DV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
+          <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
+          <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
+        </div>
+      `;
+    });
+    resultsDiv.innerHTML = html;
+  }
+}
+</script>
+  <!-- ============================================================= -->
+
+</body>
+</html>
