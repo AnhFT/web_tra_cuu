@@ -32,8 +32,12 @@
     <input type="text" id="searchInput" class="search-input" placeholder="🔍 Nhập từ khóa tìm kiếm..." onkeyup="searchData()">
 
     <!-- KHU VỰC HIỂN THỊ KẾT QUẢ TÌM KIẾM -->
-    <div id="results" style="margin-top: 20px;"></div>
+<!-- KHU VỰC HIỂN THỊ KẾT QUẢ / TRẠNG THÁI LOAD -->
+<div id="results" style="margin-top: 20px;">
+  <div id="loading" style="color: #0284c7; font-weight: 500; text-align: center; padding: 20px 0;">
+    ⏳ Đang tải dữ liệu 24.769 đơn vị, vui lòng chờ trong giây lát...
   </div>
+</div>
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
  <script>
