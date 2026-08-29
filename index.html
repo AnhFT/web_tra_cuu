@@ -46,57 +46,77 @@ window.onload = function() {
     .then(res => res.json())
     .then(data => {
       // SheetBest trả về trực tiếp danh sách tên cột dạng chữ
-      dataList = data.map(item => ({
-        maDV: item["MÃ ĐƠN VỊ"] || "",
-        tenDV: item["TÊN ĐƠN VỊ"] || "",
-        diaChi: item["ĐỊA CHỈ LH"] || "",
-        mst: item["MST"] || "",
-        ngayTang: item["NGÀY TĂNG"] || "",
-        chuyenQuan: item["CHUYÊN QUẢN"] || "",
-        sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
-      }));
+dataList = data.map(item => ({
+  maDV: item["MÃ ĐƠN VỊ"] || "",
+  tenDV: item["TÊN ĐƠN VỊ"] || "",
+  diaChi: item["ĐỊA CHỈ LH"] || "",
+  mst: item["MST"] || "",
+  ngayTang: item["NGÀY TĂNG"] || "",
+  chuyenQuan: item["CHUYÊN QUẢN THU"] || "", // Thêm chữ THU vào đây
+  sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
+}));
       console.log("Đã tải xong dữ liệu:", dataList);
     })
     .catch(err => console.error("Lỗi lấy dữ liệu:", err));
 };
 
   // Hàm searchData() giữ nguyên như cũ
-  function searchData() {
-  let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
-  let resultsDiv = document.getElementById("results");
-  
-  if (keyword === "") {
-    resultsDiv.innerHTML = "";
-    return;
-  }
+  let searchTimeout = null;
 
-  // Lọc dữ liệu qua tất cả các thuộc tính đã map từ SheetBest
-  let filtered = dataList.filter(item => 
-    (item.maDV && item.maDV.toLowerCase().includes(keyword)) ||
-    (item.tenDV && item.tenDV.toLowerCase().includes(keyword)) ||
-    (item.diaChi && item.diaChi.toLowerCase().includes(keyword)) ||
-    (item.mst && item.mst.toLowerCase().includes(keyword)) ||
-    (item.ngayTang && item.ngayTang.toLowerCase().includes(keyword)) ||
-    (item.chuyenQuan && item.chuyenQuan.toLowerCase().includes(keyword)) ||
-    (item.sdtCQ && item.sdtCQ.toLowerCase().includes(keyword))
-  );
+function searchData() {
+  // Xóa đếm ngược cũ nếu người dùng vẫn đang gõ
+  clearTimeout(searchTimeout);
 
-  if (filtered.length === 0) {
-    resultsDiv.innerHTML = "<p style='color: red; margin-top: 15px;'>Không tìm thấy đơn vị phù hợp.</p>";
-  } else {
-    let html = "";
-    filtered.forEach(item => {
-      html += `
-        <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
-          <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
-          <span style="font-size: 14px;"><b>Mã DV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
-          <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
-          <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
-        </div>
-      `;
-    });
-    resultsDiv.innerHTML = html;
-  }
+  // Đợi 300ms sau khi ngừng gõ mới bắt đầu xử lý tìm kiếm
+  searchTimeout = setTimeout(() => {
+    let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+    let resultsDiv = document.getElementById("results");
+
+    if (keyword === "") {
+      resultsDiv.innerHTML = "";
+      return;
+    }
+
+    // Lọc dữ liệu tối ưu
+    let filtered = [];
+    for (let i = 0; i < dataList.length; i++) {
+      let item = dataList[i];
+      if (
+        (item.maDV && item.maDV.toLowerCase().includes(keyword)) ||
+        (item.tenDV && item.tenDV.toLowerCase().includes(keyword)) ||
+        (item.diaChi && item.diaChi.toLowerCase().includes(keyword)) ||
+        (item.mst && item.mst.toLowerCase().includes(keyword)) ||
+        (item.chuyenQuan && item.chuyenQuan.toLowerCase().includes(keyword)) ||
+        (item.sdtCQ && item.sdtCQ.toLowerCase().includes(keyword))
+      ) {
+        filtered.push(item);
+        // Giới hạn chỉ lấy tối đa 50 kết quả đầu tiên để tránh tràn bộ nhớ giao diện
+        if (filtered.length >= 50) break; 
+      }
+    }
+
+    if (filtered.length === 0) {
+      resultsDiv.innerHTML = "<p style='color: red; margin-top: 15px;'>Không tìm thấy đơn vị phù hợp.</p>";
+    } else {
+      let html = "";
+      filtered.forEach(item => {
+        html += `
+          <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
+            <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
+            <span style="font-size: 14px;"><b>Mã DV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
+            <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
+            <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
+          </div>
+        `;
+      });
+      
+      if (filtered.length >= 50) {
+        html += `<p style="color: #64748b; font-size: 13px; margin-top: 10px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập chi tiết hơn để thu hẹp tìm kiếm.</i></p>`;
+      }
+      
+      resultsDiv.innerHTML = html;
+    }
+  }, 300); // 300ms độ trễ
 }
 </script>
   <!-- ============================================================= -->
