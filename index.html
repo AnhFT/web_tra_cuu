@@ -46,28 +46,15 @@
   const url = `https://api.sheetbest.com/sheets/43051695-bfae-41a8-ae94-0e4157bb5b4a`;
 
 window.onload = function() {
-  // 1. Tự động lấy thời gian cập nhật mới nhất từ Google Sheets API
   fetch(url)
-    .then(res => {
-      // Lấy thời gian sửa file từ Header của phản hồi HTTP (Last-Modified)
-      let lastModified = res.headers.get("Last-Modified");
-      let spanUpdate = document.getElementById("lastUpdate");
-      
-      if (lastModified) {
-        let dateObj = new Date(lastModified);
-        let dateStr = dateObj.toLocaleDateString('vi-VN');
-        let timeStr = dateObj.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        spanUpdate.innerText = `${dateStr} ${timeStr}`;
-      } else {
-        // Dự phòng: Lấy ngày giờ hiện tại nếu server không trả header
-        let now = new Date();
-        spanUpdate.innerText = `${now.toLocaleDateString('vi-VN')} ${now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
-      }
-      
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
-      // 2. Map dữ liệu đơn vị
+      // 1. Lấy ngày giờ cập nhật từ ô H1 (truy cập dòng đầu tiên)
+      if (data.length > 0 && data[0]["NGÀY CẬP NHẬT"]) {
+        document.getElementById("lastUpdate").innerText = data[0]["NGÀY CẬP NHẬT"];
+      }
+
+      // 2. Map dữ liệu như bình thường
       dataList = data.map(item => ({
         maDV: item["MÃ ĐƠN VỊ"] || "",
         tenDV: item["TÊN ĐƠN VỊ"] || "",
@@ -80,10 +67,6 @@ window.onload = function() {
 
       document.getElementById("results").innerHTML = 
         `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
-    })
-    .catch(err => {
-      console.error("Lỗi:", err);
-      document.getElementById("lastUpdate").innerText = "Chưa xác định";
     });
 };
 
@@ -130,7 +113,7 @@ function searchData() {
         html += `
           <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
             <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
-            <span style="font-size: 14px;"><b>Mã DV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
+            <span style="font-size: 14px;"><b>Mã ĐV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
             <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
             <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
           </div>
