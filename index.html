@@ -40,94 +40,59 @@
 </div>
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
- <script>
+<script>
+  // 1. Thay Sheet ID của bạn vào đây (Dãy ký tự nằm giữa /d/ và /edit trên link Google Sheet)
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1RrurO8'; 
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
   let dataList = [];
 
-  const url = `https://api.sheetbest.com/sheets/43051695-bfae-41a8-ae94-0e4157bb5b4a`;
+  window.onload = function() {
+    fetch(url)
+      .then(res => res.text())
+      .then(rep => {
+        // Google Viz trả về dữ liệu dạng chuỗi JSON bọc trong hàm JS: google.visualization.Query.setResponse(...)
+        // Cần cắt bỏ phần thừa để lấy chuỗi JSON chuẩn
+        const jsonString = rep.substring(47, rep.length - 2);
+        const rawData = JSON.parse(jsonString);
 
-window.onload = function() {
-  fetch(url)
-    .then(res => res.json())
-    .then(data => {
-      // 1. Lấy ngày giờ cập nhật từ ô H1 (truy cập dòng đầu tiên)
-      if (data.length > 0 && data[0]["NGÀY CẬP NHẬT"]) {
-        document.getElementById("lastUpdate").innerText = data[0]["NGÀY CẬP NHẬT"];
-      }
+        // Lấy danh sách tên cột
+        const cols = rawData.table.cols.map(c => c ? c.label : '');
+        
+        // Chuyển đổi dữ liệu bảng thành mảng Đối tượng (Array of Objects)
+        dataList = rawData.table.rows.map(row => {
+          let item = {};
+          row.c.forEach((cell, idx) => {
+            let colName = cols[idx];
+            let val = cell ? (cell.v !== null ? cell.v : '') : '';
+            if (colName) item[colName] = String(val);
+          });
+          return {
+            maDV: item["MÃ ĐƠN VỊ"] || "",
+            tenDV: item["TÊN ĐƠN VỊ"] || "",
+            diaChi: item["ĐỊA CHỈ LH"] || "",
+            mst: item["MST"] || "",
+            ngayTang: item["NGÀY TĂNG"] || "",
+            chuyenQuan: item["CHUYÊN QUẢN THU"] || "",
+            sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
+          };
+        });
 
-      // 2. Map dữ liệu như bình thường
-      dataList = data.map(item => ({
-        maDV: item["MÃ ĐƠN VỊ"] || "",
-        tenDV: item["TÊN ĐƠN VỊ"] || "",
-        diaChi: item["ĐỊA CHỈ LH"] || "",
-        mst: item["MST"] || "",
-        ngayTang: item["NGÀY TĂNG"] || "",
-        chuyenQuan: item["CHUYÊN QUẢN THU"] || "",
-        sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
-      }));
+        // Đọc mốc ngày giờ cập nhật ở cột H1 (nếu có)
+        if (cols.length >= 8 && cols[7]) {
+          document.getElementById("lastUpdate").innerText = cols[7];
+        }
 
-      document.getElementById("results").innerHTML = 
-        `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
-    });
-};
-
-  // Hàm searchData() giữ nguyên như cũ
-  let searchTimeout = null;
-
-function searchData() {
-  // Xóa đếm ngược cũ nếu người dùng vẫn đang gõ
-  clearTimeout(searchTimeout);
-
-  // Đợi 300ms sau khi ngừng gõ mới bắt đầu xử lý tìm kiếm
-  searchTimeout = setTimeout(() => {
-    let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
-    let resultsDiv = document.getElementById("results");
-
-    if (keyword === "") {
-      resultsDiv.innerHTML = "";
-      return;
-    }
-
-    // Lọc dữ liệu tối ưu
-    let filtered = [];
-    for (let i = 0; i < dataList.length; i++) {
-      let item = dataList[i];
-      if (
-        (item.maDV && item.maDV.toLowerCase().includes(keyword)) ||
-        (item.tenDV && item.tenDV.toLowerCase().includes(keyword)) ||
-        (item.diaChi && item.diaChi.toLowerCase().includes(keyword)) ||
-        (item.mst && item.mst.toLowerCase().includes(keyword)) ||
-        (item.chuyenQuan && item.chuyenQuan.toLowerCase().includes(keyword)) ||
-        (item.sdtCQ && item.sdtCQ.toLowerCase().includes(keyword))
-      ) {
-        filtered.push(item);
-        // Giới hạn chỉ lấy tối đa 50 kết quả đầu tiên để tránh tràn bộ nhớ giao diện
-        if (filtered.length >= 50) break; 
-      }
-    }
-
-    if (filtered.length === 0) {
-      resultsDiv.innerHTML = "<p style='color: red; margin-top: 15px;'>Không tìm thấy đơn vị phù hợp.</p>";
-    } else {
-      let html = "";
-      filtered.forEach(item => {
-        html += `
-          <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
-            <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
-            <span style="font-size: 14px;"><b>Mã ĐV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
-            <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
-            <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
-          </div>
-        `;
+        // Báo kết nối thành công
+        document.getElementById("results").innerHTML = 
+          `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
+      })
+      .catch(err => {
+        console.error("Lỗi kết nối Google Viz API:", err);
+        document.getElementById("results").innerHTML = 
+          "<p style='color: red; text-align: center;'>❌ Không thể lấy dữ liệu. Vui lòng kiểm tra lại quyền truy cập của Google Sheet!</p>";
       });
-      
-      if (filtered.length >= 50) {
-        html += `<p style="color: #64748b; font-size: 13px; margin-top: 10px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập chi tiết hơn để thu hẹp tìm kiếm.</i></p>`;
-      }
-      
-      resultsDiv.innerHTML = html;
-    }
-  }, 300); // 300ms độ trễ
-}
+  };
 </script>
   <!-- ============================================================= -->
 
