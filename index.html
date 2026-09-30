@@ -47,7 +47,6 @@
   let dataList = [];
   let searchTimeout = null;
 
-  // Hàm chuyển đổi dữ liệu ô Google Sheet thành chuỗi văn bản an toàn
   function parseCell(cell) {
     if (!cell) return "";
     if (cell.f !== undefined && cell.f !== null) return String(cell.f);
@@ -69,59 +68,62 @@
     return "";
   }
 
-  // 1. TẢI DỮ LIỆU KHI VÀO TRANG
   window.onload = function() {
     fetch(url)
-      .then(res => res.text())
+      .then(res => {
+        if (!res.ok) throw new Error("HTTP Status: " + res.status);
+        return res.text();
+      })
       .then(rep => {
-        const jsonText = rep.substring(rep.indexOf("{"), rep.lastIndexOf("}") + 1);
-        const rawData = JSON.parse(jsonText);
+        // Cắt bỏ hàm bọc google.visualization.Query.setResponse(...) bằng Regex an toàn
+        const matches = rep.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?/);
+        if (!matches || !matches[1]) {
+          throw new Error("Không thể bóc tách dữ liệu JSON từ Google Sheet");
+        }
+        
+        const rawData = JSON.parse(matches[1]);
         const rows = rawData.table.rows;
 
-        // Cập nhật mốc thời gian cập nhật (lấy ở ô H2)
+        // 1. Cập nhật ngày tháng ở ô H2 (chỉ số 7)
         try {
           if (rows.length > 0 && rows[0].c && rows[0].c[7]) {
             let updateVal = parseCell(rows[0].c[7]);
-            document.getElementById("lastUpdate").innerText = updateVal || "29/08/2026 10:51:21";
+            document.getElementById("lastUpdate").innerText = updateVal || "29/08/2026";
           }
         } catch(e) {
-          document.getElementById("lastUpdate").innerText = "29/08/2026 10:51:21";
+          document.getElementById("lastUpdate").innerText = "29/08/2026";
         }
 
-        // Map dữ liệu theo thứ tự cột A, B, C, D, E, F, G
+        // 2. Map dữ liệu
         dataList = rows.map(row => {
           const c = row.c || [];
           return {
-            maDV: parseCell(c[0]),        // Cột A: MÃ ĐƠN VỊ
-            tenDV: parseCell(c[1]),       // Cột B: TÊN ĐƠN VỊ
-            diaChi: parseCell(c[2]),      // Cột C: ĐỊA CHỈ LH
-            mst: parseCell(c[3]),         // Cột D: MST
-            ngayTang: parseCell(c[4]),    // Cột E: NGÀY TĂNG
-            chuyenQuan: parseCell(c[5]),  // Cột F: CHUYÊN QUẢN THU
-            sdtCQ: parseCell(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU
+            maDV: parseCell(c[0]),        // A
+            tenDV: parseCell(c[1]),       // B
+            diaChi: parseCell(c[2]),      // C
+            mst: parseCell(c[3]),         // D
+            ngayTang: parseCell(c[4]),    // E
+            chuyenQuan: parseCell(c[5]),  // F
+            sdtCQ: parseCell(c[6])        // G
           };
         });
 
-        // Báo kết nối thành công
         document.getElementById("results").innerHTML = 
           `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
-          
-        // Tự động tìm ngay nếu ô tìm kiếm đã có chữ sẵn
+
         if (document.getElementById("searchInput").value.trim() !== "") {
           searchData();
         }
       })
       .catch(err => {
-        console.error("Lỗi tải dữ liệu:", err);
+        console.error("Lỗi chi tiết:", err);
         document.getElementById("results").innerHTML = 
-          "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng kiểm tra quyền truy cập!</p>";
+          `<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Chi tiết lỗi: ${err.message}</p>`;
       });
   };
 
-  // 2. HÀM TÌM KIẾM DỮ LIỆU
   function searchData() {
     clearTimeout(searchTimeout);
-
     searchTimeout = setTimeout(() => {
       let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
       let resultsDiv = document.getElementById("results");
@@ -134,7 +136,6 @@
       let filtered = [];
       for (let i = 0; i < dataList.length; i++) {
         let item = dataList[i];
-        
         let maDV = (item.maDV || "").toLowerCase();
         let tenDV = (item.tenDV || "").toLowerCase();
         let diaChi = (item.diaChi || "").toLowerCase();
@@ -173,7 +174,6 @@
         if (filtered.length >= 50) {
           html += `<p style="color: #64748b; font-size: 13px; margin-top: 10px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập chi tiết hơn để thu hẹp tìm kiếm.</i></p>`;
         }
-
         resultsDiv.innerHTML = html;
       }
     }, 300);
