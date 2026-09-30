@@ -41,49 +41,70 @@
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
 <script>
-  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1RrurO8'; 
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDsch3YTOsp8TVfWD579xb1RrurO8'; 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
   let dataList = [];
+
+  // Hàm hỗ trợ lấy chuỗi văn bản chuẩn từ ô Google Sheet
+  function getVal(cell) {
+    if (!cell) return "";
+    // Nếu có giá trị hiển thị f (formatted value) thì dùng f, nếu không lấy v
+    if (cell.f !== undefined && cell.f !== null) return String(cell.f);
+    if (cell.v !== undefined && cell.v !== null) {
+      let val = String(cell.v);
+      // Xử lý chuỗi dạng Date(yyyy,m,d,h,i,s) nếu Google trả về
+      if (val.startsWith("Date(")) {
+        let parts = val.replace("Date(", "").replace(")", "").split(",");
+        if (parts.length >= 3) {
+          let y = parts[0];
+          let m = String(parseInt(parts[1]) + 1).padStart(2, '0'); // Tháng trong JS bắt đầu từ 0
+          let d = String(parts[2]).padStart(2, '0');
+          let h = parts[3] ? String(parts[3]).padStart(2, '0') : "";
+          let min = parts[4] ? String(parts[4]).padStart(2, '0') : "";
+          return h ? `${d}/${m}/${y} ${h}:${min}` : `${d}/${m}/${y}`;
+        }
+      }
+      return val;
+    }
+    return "";
+  }
 
   window.onload = function() {
     fetch(url)
       .then(res => res.text())
       .then(rep => {
-        // Cắt bỏ phần bọc hàm JS để lấy chuỗi JSON chuẩn
         const jsonString = rep.substring(47, rep.length - 2);
         const rawData = JSON.parse(jsonString);
-
         const rows = rawData.table.rows;
 
-        // 1. Lấy ngày cập nhật từ dòng đầu tiên (ô H2 / ô thứ 8 của hàng đầu tiên)
-        if (rows.length > 0 && rows[0].c[7] && rows[0].c[7].v) {
-          document.getElementById("lastUpdate").innerText = rows[0].c[7].v;
+        // 1. Lấy ngày cập nhật ở ô H2 (hàng đầu tiên, cột thứ 8)
+        if (rows.length > 0 && rows[0].c && rows[0].c[7]) {
+          document.getElementById("lastUpdate").innerText = getVal(rows[0].c[7]);
         } else {
           document.getElementById("lastUpdate").innerText = "29/08/2026";
         }
 
-        // 2. Map dữ liệu lấy theo vị trí cột cố định (A, B, C, D, E, F, G)
-        // Cách này đảm bảo 100% không lo lỗi sai tên tiêu đề cột trên Google Sheets
+        // 2. Map dữ liệu lấy theo giá trị hiển thị chuẩn
         dataList = rows.map(row => {
-          const c = row.c;
+          const c = row.c || [];
           return {
-            maDV: c[0] && c[0].v !== null ? String(c[0].v) : "",        // Cột A: MÃ ĐƠN VỊ
-            tenDV: c[1] && c[1].v !== null ? String(c[1].v) : "",       // Cột B: TÊN ĐƠN VỊ
-            diaChi: c[2] && c[2].v !== null ? String(c[2].v) : "",      // Cột C: ĐỊA CHỈ LH
-            mst: c[3] && c[3].v !== null ? String(c[3].v) : "",         // Cột D: MST
-            ngayTang: c[4] && c[4].v !== null ? String(c[4].v) : "",    // Cột E: NGÀY TĂNG
-            chuyenQuan: c[5] && c[5].v !== null ? String(c[5].v) : "",  // Cột F: CHUYÊN QUẢN THU
-            sdtCQ: c[6] && c[6].v !== null ? String(c[6].v) : ""        // Cột G: SDT_CHUYÊN QUẢN THU
+            maDV: getVal(c[0]),        // Cột A: MÃ ĐƠN VỊ
+            tenDV: getVal(c[1]),       // Cột B: TÊN ĐƠN VỊ
+            diaChi: getVal(c[2]),      // Cột C: ĐỊA CHỈ LH
+            mst: getVal(c[3]),         // Cột D: MST
+            ngayTang: getVal(c[4]),    // Cột E: NGÀY TĂNG
+            chuyenQuan: getVal(c[5]),  // Cột F: CHUYÊN QUẢN THU
+            sdtCQ: getVal(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU
           };
         });
 
-        // Báo kết nối thành công
+        // Thông báo hoàn tất
         document.getElementById("results").innerHTML = 
           `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
       })
       .catch(err => {
-        console.error("Lỗi:", err);
+        console.error("Lỗi lấy dữ liệu:", err);
         document.getElementById("results").innerHTML = 
           "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng thử lại sau.</p>";
       });
