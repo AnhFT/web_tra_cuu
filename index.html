@@ -41,8 +41,7 @@
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
 <script>
-  // 1. Thay Sheet ID của bạn vào đây (Dãy ký tự nằm giữa /d/ và /edit trên link Google Sheet)
-  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1RrurO8'; 
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDsch3YTOsp8TVfWD579xb1Rrur08'; 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
   let dataList = [];
@@ -51,46 +50,42 @@
     fetch(url)
       .then(res => res.text())
       .then(rep => {
-        // Google Viz trả về dữ liệu dạng chuỗi JSON bọc trong hàm JS: google.visualization.Query.setResponse(...)
-        // Cần cắt bỏ phần thừa để lấy chuỗi JSON chuẩn
+        // Cắt bỏ phần bọc hàm JS để lấy chuỗi JSON chuẩn
         const jsonString = rep.substring(47, rep.length - 2);
         const rawData = JSON.parse(jsonString);
 
-        // Lấy danh sách tên cột
-        const cols = rawData.table.cols.map(c => c ? c.label : '');
-        
-        // Chuyển đổi dữ liệu bảng thành mảng Đối tượng (Array of Objects)
-        dataList = rawData.table.rows.map(row => {
-          let item = {};
-          row.c.forEach((cell, idx) => {
-            let colName = cols[idx];
-            let val = cell ? (cell.v !== null ? cell.v : '') : '';
-            if (colName) item[colName] = String(val);
-          });
+        const rows = rawData.table.rows;
+
+        // 1. Lấy ngày cập nhật từ dòng đầu tiên (ô H2 / ô thứ 8 của hàng đầu tiên)
+        if (rows.length > 0 && rows[0].c[7] && rows[0].c[7].v) {
+          document.getElementById("lastUpdate").innerText = rows[0].c[7].v;
+        } else {
+          document.getElementById("lastUpdate").innerText = "29/08/2026";
+        }
+
+        // 2. Map dữ liệu lấy theo vị trí cột cố định (A, B, C, D, E, F, G)
+        // Cách này đảm bảo 100% không lo lỗi sai tên tiêu đề cột trên Google Sheets
+        dataList = rows.map(row => {
+          const c = row.c;
           return {
-            maDV: item["MÃ ĐƠN VỊ"] || "",
-            tenDV: item["TÊN ĐƠN VỊ"] || "",
-            diaChi: item["ĐỊA CHỈ LH"] || "",
-            mst: item["MST"] || "",
-            ngayTang: item["NGÀY TĂNG"] || "",
-            chuyenQuan: item["CHUYÊN QUẢN THU"] || "",
-            sdtCQ: item["SDT_CHUYÊN QUẢN THU"] || ""
+            maDV: c[0] && c[0].v !== null ? String(c[0].v) : "",        // Cột A: MÃ ĐƠN VỊ
+            tenDV: c[1] && c[1].v !== null ? String(c[1].v) : "",       // Cột B: TÊN ĐƠN VỊ
+            diaChi: c[2] && c[2].v !== null ? String(c[2].v) : "",      // Cột C: ĐỊA CHỈ LH
+            mst: c[3] && c[3].v !== null ? String(c[3].v) : "",         // Cột D: MST
+            ngayTang: c[4] && c[4].v !== null ? String(c[4].v) : "",    // Cột E: NGÀY TĂNG
+            chuyenQuan: c[5] && c[5].v !== null ? String(c[5].v) : "",  // Cột F: CHUYÊN QUẢN THU
+            sdtCQ: c[6] && c[6].v !== null ? String(c[6].v) : ""        // Cột G: SDT_CHUYÊN QUẢN THU
           };
         });
-
-        // Đọc mốc ngày giờ cập nhật ở cột H1 (nếu có)
-        if (cols.length >= 8 && cols[7]) {
-          document.getElementById("lastUpdate").innerText = cols[7];
-        }
 
         // Báo kết nối thành công
         document.getElementById("results").innerHTML = 
           `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
       })
       .catch(err => {
-        console.error("Lỗi kết nối Google Viz API:", err);
+        console.error("Lỗi:", err);
         document.getElementById("results").innerHTML = 
-          "<p style='color: red; text-align: center;'>❌ Không thể lấy dữ liệu. Vui lòng kiểm tra lại quyền truy cập của Google Sheet!</p>";
+          "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng thử lại sau.</p>";
       });
   };
 </script>
