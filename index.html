@@ -41,28 +41,38 @@
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
 <script>
-  const SHEET_ID = '15YQ1o8iDEFg-EtKDsch3YTOsp8TVfWD579xb1RrurO8'; 
+  // Link Sheet ID chính xác từ hình của bạn[cite: 16]
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1RrurO8'; 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
   let dataList = [];
 
-  // Hàm hỗ trợ lấy chuỗi văn bản chuẩn từ ô Google Sheet
+  // Hàm chuyển đổi dữ liệu ô Google Sheet thành chuỗi văn bản chuẩn
   function getVal(cell) {
     if (!cell) return "";
-    // Nếu có giá trị hiển thị f (formatted value) thì dùng f, nếu không lấy v
+    
+    // 1. Ưu tiên lấy định dạng hiển thị gốc (cell.f)
     if (cell.f !== undefined && cell.f !== null) return String(cell.f);
+    
+    // 2. Xử lý nếu ô trả về dạng value (cell.v)
     if (cell.v !== undefined && cell.v !== null) {
       let val = String(cell.v);
-      // Xử lý chuỗi dạng Date(yyyy,m,d,h,i,s) nếu Google trả về
+      
+      // Xử lý chuỗi Date(yyyy,m,d,h,i,s) do Google Viz trả về
       if (val.startsWith("Date(")) {
-        let parts = val.replace("Date(", "").replace(")", "").split(",");
-        if (parts.length >= 3) {
-          let y = parts[0];
-          let m = String(parseInt(parts[1]) + 1).padStart(2, '0'); // Tháng trong JS bắt đầu từ 0
-          let d = String(parts[2]).padStart(2, '0');
-          let h = parts[3] ? String(parts[3]).padStart(2, '0') : "";
-          let min = parts[4] ? String(parts[4]).padStart(2, '0') : "";
-          return h ? `${d}/${m}/${y} ${h}:${min}` : `${d}/${m}/${y}`;
+        let p = val.replace("Date(", "").replace(")", "").split(",");
+        if (p.length >= 3) {
+          let y = p[0];
+          let m = String(parseInt(p[1]) + 1).padStart(2, '0'); // Tháng trong JS tính từ 0
+          let d = String(p[2]).padStart(2, '0');
+          let h = p[3] !== undefined ? String(p[3]).padStart(2, '0') : "";
+          let min = p[4] !== undefined ? String(p[4]).padStart(2, '0') : "";
+          let sec = p[5] !== undefined ? String(p[5]).padStart(2, '0') : "";
+          
+          if (h !== "") {
+            return `${d}/${m}/${y} ${h}:${min}:${sec}`.trim();
+          }
+          return `${d}/${m}/${y}`;
         }
       }
       return val;
@@ -74,39 +84,41 @@
     fetch(url)
       .then(res => res.text())
       .then(rep => {
+        // Cắt bỏ hàm bọc JS google.visualization.Query.setResponse(...)
         const jsonString = rep.substring(47, rep.length - 2);
         const rawData = JSON.parse(jsonString);
         const rows = rawData.table.rows;
 
-        // 1. Lấy ngày cập nhật ở ô H2 (hàng đầu tiên, cột thứ 8)
+        // 1. Lấy ngày cập nhật ở ô H2 (Hàng đầu tiên, cột thứ 8 - index 7)[cite: 18]
         if (rows.length > 0 && rows[0].c && rows[0].c[7]) {
-          document.getElementById("lastUpdate").innerText = getVal(rows[0].c[7]);
+          let dateFormatted = getVal(rows[0].c[7]);
+          document.getElementById("lastUpdate").innerText = dateFormatted || "29/08/2026 10:51:21";
         } else {
-          document.getElementById("lastUpdate").innerText = "29/08/2026";
+          document.getElementById("lastUpdate").innerText = "29/08/2026 10:51:21";
         }
 
-        // 2. Map dữ liệu lấy theo giá trị hiển thị chuẩn
+        // 2. Map dữ liệu chính xác theo thứ tự cột A, B, C, D, E, F, G[cite: 18]
         dataList = rows.map(row => {
           const c = row.c || [];
           return {
-            maDV: getVal(c[0]),        // Cột A: MÃ ĐƠN VỊ
-            tenDV: getVal(c[1]),       // Cột B: TÊN ĐƠN VỊ
-            diaChi: getVal(c[2]),      // Cột C: ĐỊA CHỈ LH
-            mst: getVal(c[3]),         // Cột D: MST
-            ngayTang: getVal(c[4]),    // Cột E: NGÀY TĂNG
-            chuyenQuan: getVal(c[5]),  // Cột F: CHUYÊN QUẢN THU
-            sdtCQ: getVal(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU
+            maDV: getVal(c[0]),        // Cột A: MÃ ĐƠN VỊ[cite: 18]
+            tenDV: getVal(c[1]),       // Cột B: TÊN ĐƠN VỊ[cite: 18]
+            diaChi: getVal(c[2]),      // Cột C: ĐỊA CHỈ LH[cite: 18]
+            mst: getVal(c[3]),         // Cột D: MST[cite: 18]
+            ngayTang: getVal(c[4]),    // Cột E: NGÀY TĂNG[cite: 18]
+            chuyenQuan: getVal(c[5]),  // Cột F: CHUYÊN QUẢN THU[cite: 18]
+            sdtCQ: getVal(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU[cite: 18]
           };
         });
 
-        // Thông báo hoàn tất
+        // Báo kết nối thành công
         document.getElementById("results").innerHTML = 
           `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
       })
       .catch(err => {
-        console.error("Lỗi lấy dữ liệu:", err);
+        console.error("Lỗi kết nối:", err);
         document.getElementById("results").innerHTML = 
-          "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng thử lại sau.</p>";
+          "<p style='color: red; text-align: center;'>❌ Không thể tải dữ liệu. Vui lòng kiểm tra kết nối!</p>";
       });
   };
 </script>
