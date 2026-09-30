@@ -41,86 +41,143 @@
 
   <!-- ==================== ĐÂY CHÍNH LÀ BƯỚC 3 ==================== -->
 <script>
-  // Link Sheet ID chính xác từ hình của bạn[cite: 16]
-  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1RrurO8'; 
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDsch3YTOsp8TVfWD579xb1Rrur08'; 
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
   let dataList = [];
+  let searchTimeout = null;
 
-  // Hàm chuyển đổi dữ liệu ô Google Sheet thành chuỗi văn bản chuẩn
-  function getVal(cell) {
+  // Hàm chuyển đổi dữ liệu ô Google Sheet thành chuỗi văn bản an toàn
+  function parseCell(cell) {
     if (!cell) return "";
-    
-    // 1. Ưu tiên lấy định dạng hiển thị gốc (cell.f)
     if (cell.f !== undefined && cell.f !== null) return String(cell.f);
-    
-    // 2. Xử lý nếu ô trả về dạng value (cell.v)
     if (cell.v !== undefined && cell.v !== null) {
-      let val = String(cell.v);
-      
-      // Xử lý chuỗi Date(yyyy,m,d,h,i,s) do Google Viz trả về
-      if (val.startsWith("Date(")) {
-        let p = val.replace("Date(", "").replace(")", "").split(",");
+      let str = String(cell.v);
+      if (str.startsWith("Date(")) {
+        let p = str.replace("Date(", "").replace(")", "").split(",");
         if (p.length >= 3) {
           let y = p[0];
-          let m = String(parseInt(p[1]) + 1).padStart(2, '0'); // Tháng trong JS tính từ 0
+          let m = String(parseInt(p[1]) + 1).padStart(2, '0');
           let d = String(p[2]).padStart(2, '0');
           let h = p[3] !== undefined ? String(p[3]).padStart(2, '0') : "";
           let min = p[4] !== undefined ? String(p[4]).padStart(2, '0') : "";
-          let sec = p[5] !== undefined ? String(p[5]).padStart(2, '0') : "";
-          
-          if (h !== "") {
-            return `${d}/${m}/${y} ${h}:${min}:${sec}`.trim();
-          }
-          return `${d}/${m}/${y}`;
+          return h ? `${d}/${m}/${y} ${h}:${min}` : `${d}/${m}/${y}`;
         }
       }
-      return val;
+      return str;
     }
     return "";
   }
 
+  // 1. TẢI DỮ LIỆU KHI VÀO TRANG
   window.onload = function() {
     fetch(url)
       .then(res => res.text())
       .then(rep => {
-        // Cắt bỏ hàm bọc JS google.visualization.Query.setResponse(...)
-        const jsonString = rep.substring(47, rep.length - 2);
-        const rawData = JSON.parse(jsonString);
+        const jsonText = rep.substring(rep.indexOf("{"), rep.lastIndexOf("}") + 1);
+        const rawData = JSON.parse(jsonText);
         const rows = rawData.table.rows;
 
-        // 1. Lấy ngày cập nhật ở ô H2 (Hàng đầu tiên, cột thứ 8 - index 7)[cite: 18]
-        if (rows.length > 0 && rows[0].c && rows[0].c[7]) {
-          let dateFormatted = getVal(rows[0].c[7]);
-          document.getElementById("lastUpdate").innerText = dateFormatted || "29/08/2026 10:51:21";
-        } else {
+        // Cập nhật mốc thời gian cập nhật (lấy ở ô H2)
+        try {
+          if (rows.length > 0 && rows[0].c && rows[0].c[7]) {
+            let updateVal = parseCell(rows[0].c[7]);
+            document.getElementById("lastUpdate").innerText = updateVal || "29/08/2026 10:51:21";
+          }
+        } catch(e) {
           document.getElementById("lastUpdate").innerText = "29/08/2026 10:51:21";
         }
 
-        // 2. Map dữ liệu chính xác theo thứ tự cột A, B, C, D, E, F, G[cite: 18]
+        // Map dữ liệu theo thứ tự cột A, B, C, D, E, F, G
         dataList = rows.map(row => {
           const c = row.c || [];
           return {
-            maDV: getVal(c[0]),        // Cột A: MÃ ĐƠN VỊ[cite: 18]
-            tenDV: getVal(c[1]),       // Cột B: TÊN ĐƠN VỊ[cite: 18]
-            diaChi: getVal(c[2]),      // Cột C: ĐỊA CHỈ LH[cite: 18]
-            mst: getVal(c[3]),         // Cột D: MST[cite: 18]
-            ngayTang: getVal(c[4]),    // Cột E: NGÀY TĂNG[cite: 18]
-            chuyenQuan: getVal(c[5]),  // Cột F: CHUYÊN QUẢN THU[cite: 18]
-            sdtCQ: getVal(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU[cite: 18]
+            maDV: parseCell(c[0]),        // Cột A: MÃ ĐƠN VỊ
+            tenDV: parseCell(c[1]),       // Cột B: TÊN ĐƠN VỊ
+            diaChi: parseCell(c[2]),      // Cột C: ĐỊA CHỈ LH
+            mst: parseCell(c[3]),         // Cột D: MST
+            ngayTang: parseCell(c[4]),    // Cột E: NGÀY TĂNG
+            chuyenQuan: parseCell(c[5]),  // Cột F: CHUYÊN QUẢN THU
+            sdtCQ: parseCell(c[6])        // Cột G: SDT_CHUYÊN QUẢN THU
           };
         });
 
         // Báo kết nối thành công
         document.getElementById("results").innerHTML = 
           `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
+          
+        // Tự động tìm ngay nếu ô tìm kiếm đã có chữ sẵn
+        if (document.getElementById("searchInput").value.trim() !== "") {
+          searchData();
+        }
       })
       .catch(err => {
-        console.error("Lỗi kết nối:", err);
+        console.error("Lỗi tải dữ liệu:", err);
         document.getElementById("results").innerHTML = 
-          "<p style='color: red; text-align: center;'>❌ Không thể tải dữ liệu. Vui lòng kiểm tra kết nối!</p>";
+          "<p style='color: red; text-align: center;'>❌ Không thể kết nối dữ liệu. Vui lòng kiểm tra quyền truy cập!</p>";
       });
   };
+
+  // 2. HÀM TÌM KIẾM DỮ LIỆU
+  function searchData() {
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(() => {
+      let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
+      let resultsDiv = document.getElementById("results");
+
+      if (keyword === "") {
+        resultsDiv.innerHTML = `<p style="color: #16a34a; font-size: 13px; text-align: center;">✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị.</p>`;
+        return;
+      }
+
+      let filtered = [];
+      for (let i = 0; i < dataList.length; i++) {
+        let item = dataList[i];
+        
+        let maDV = (item.maDV || "").toLowerCase();
+        let tenDV = (item.tenDV || "").toLowerCase();
+        let diaChi = (item.diaChi || "").toLowerCase();
+        let mst = (item.mst || "").toLowerCase();
+        let chuyenQuan = (item.chuyenQuan || "").toLowerCase();
+        let sdtCQ = (item.sdtCQ || "").toLowerCase();
+
+        if (
+          maDV.includes(keyword) ||
+          tenDV.includes(keyword) ||
+          diaChi.includes(keyword) ||
+          mst.includes(keyword) ||
+          chuyenQuan.includes(keyword) ||
+          sdtCQ.includes(keyword)
+        ) {
+          filtered.push(item);
+          if (filtered.length >= 50) break;
+        }
+      }
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = "<p style='color: red; margin-top: 15px; text-align: center;'>❌ Không tìm thấy đơn vị phù hợp.</p>";
+      } else {
+        let html = "";
+        filtered.forEach(item => {
+          html += `
+            <div style="border-bottom: 1px solid #e2e8f0; padding: 12px 0; text-align: left;">
+              <strong style="color: #0284c7; font-size: 16px;">${item.tenDV}</strong><br>
+              <span style="font-size: 14px;"><b>Mã DV:</b> ${item.maDV} | <b>MST:</b> ${item.mst}</span><br>
+              <span style="font-size: 13px; color: #475569;"><b>Địa chỉ:</b> ${item.diaChi}</span><br>
+              <span style="font-size: 13px; color: #475569;"><b>Chuyên quản Thu:</b> ${item.chuyenQuan} (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</span>
+            </div>
+          `;
+        });
+
+        if (filtered.length >= 50) {
+          html += `<p style="color: #64748b; font-size: 13px; margin-top: 10px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập chi tiết hơn để thu hẹp tìm kiếm.</i></p>`;
+        }
+
+        resultsDiv.innerHTML = html;
+      }
+    }, 300);
+  }
 </script>
   <!-- ============================================================= -->
 
