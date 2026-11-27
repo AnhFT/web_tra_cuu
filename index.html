@@ -19,9 +19,8 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { background-color: #f8fafc; margin: 0; padding: 24px 16px; color: var(--slate-800); }
     .container { max-width: 1000px; margin: 0 auto; }
-    
-    /* Header Card */
-    .header-card { 
+
+    .header-card {
       background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
       padding: 24px; border-radius: 16px; border: 1px solid #bae6fd;
       box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.08); margin-bottom: 24px;
@@ -29,39 +28,35 @@
     .header-title { font-size: 24px; font-weight: 800; color: #0369a1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .status-date { font-size: 13px; font-weight: 500; color: var(--slate-600); background: #ffffff; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
 
-    /* Search & Filter Box */
     .search-box { background: #ffffff; padding: 24px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 24px; }
     .search-label { font-weight: 700; font-size: 16px; margin-bottom: 6px; display: block; color: var(--slate-800); }
     .search-sub { font-size: 13px; color: var(--slate-600); margin-bottom: 14px; }
-    
+
     .input-wrapper { position: relative; }
-    .search-input { 
-      width: 100%; padding: 14px 18px 14px 44px; border: 2px solid #cbd5e1; border-radius: 12px; 
+    .search-input {
+      width: 100%; padding: 14px 18px 14px 44px; border: 2px solid #cbd5e1; border-radius: 12px;
       font-size: 16px; outline: none; transition: all 0.2s ease; background: #ffffff;
     }
     .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15); }
     .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #94a3b8; }
 
-    /* Quick Filter Chips */
     .filter-chips { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
     .chip-title { font-size: 13px; font-weight: 600; color: var(--slate-600); margin-right: 4px; }
-    .chip { 
-      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid var(--border); 
+    .chip {
+      padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid var(--border);
       background: var(--slate-100); color: var(--slate-600); cursor: pointer; transition: all 0.2s ease;
     }
     .chip.active { background: var(--primary); color: #ffffff; border-color: var(--primary); box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25); }
 
-    /* Result Cards */
-    .result-card { 
-      background: #ffffff; border-radius: 14px; border: 1px solid var(--border); padding: 20px; margin-top: 16px; 
+    .result-card {
+      background: #ffffff; border-radius: 14px; border: 1px solid var(--border); padding: 20px; margin-top: 16px;
       transition: all 0.2s ease; position: relative; overflow: hidden;
     }
     .result-card:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
     .result-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--primary); }
 
     .company-title { font-size: 17px; font-weight: 700; color: var(--slate-800); margin-bottom: 12px; line-height: 1.4; }
-    
-    /* Code Mapping Box */
+
     .code-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; background: #f8fafc; padding: 12px 16px; border-radius: 10px; border: 1px dashed #cbd5e1; margin-bottom: 12px; }
     .code-item { display: flex; flex-direction: column; }
     .code-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-600); margin-bottom: 2px; }
@@ -72,20 +67,17 @@
     .info-row { font-size: 13.5px; color: var(--slate-600); margin-top: 6px; line-height: 1.5; }
     .info-row b { color: var(--slate-800); }
 
-    /* Copy Button */
     .btn-copy {
-      background: var(--emerald-bg); color: var(--emerald); border: 1px solid #a7f3d0; 
+      background: var(--emerald-bg); color: var(--emerald); border: 1px solid #a7f3d0;
       padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;
     }
     .btn-copy:hover { background: #d1fae5; }
-
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; display: none; z-index: 1000; }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Header -->
   <div class="header-card">
     <div class="header-title">
       <span>🔍 TRA CỨU THÔNG TIN & MÃ ĐƠN VỊ MỚI</span>
@@ -93,11 +85,10 @@
     </div>
   </div>
 
-  <!-- Search & Quick Filters -->
   <div class="search-box">
     <label class="search-label" for="searchInput">Nhập thông tin đơn vị cần tìm</label>
     <div class="search-sub">Hỗ trợ tra cứu theo Mã đơn vị (Cũ/Mới), Tên đơn vị, Mã số thuế, SĐT hoặc Tên Chuyên quản Thu</div>
-    
+
     <div class="input-wrapper">
       <span class="search-icon">🔎</span>
       <input type="text" id="searchInput" class="search-input" placeholder="Gõ Mã DV cũ, Mã DV mới, Tên công ty hoặc MST..." onkeyup="searchData()">
@@ -111,7 +102,6 @@
     </div>
   </div>
 
-  <!-- Results Output -->
   <div id="results">
     <div style="text-align: center; color: var(--primary); padding: 30px 0; font-weight: 500;">
       ⏳ Đang kết nối dữ liệu từ Google Sheet, vui lòng chờ trong giây lát...
@@ -122,9 +112,9 @@
 <div id="toast" class="toast">📋 Đã sao chép vào bộ nhớ tạm!</div>
 
 <script>
-  // Link Google Sheet ID của bạn
-  const SHEET_ID = '15YQ1o8iDEFg-EtKDsch3YTOsp8TVfWD579xb1Rrur08'; 
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+  const SHEET_ID = '15YQ1o8iDEFg-EtKDscH3YTOsp8TVfWD579xb1Rrur08';
+  const SHEET_NAME = 'SHEET_ID';
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=out:json`;
 
   let dataList = [];
   let currentFilter = 'ALL';
@@ -143,7 +133,11 @@
           let d = String(p[2]).padStart(2, '0');
           let h = p[3] !== undefined ? String(p[3]).padStart(2, '0') : "";
           let min = p[4] !== undefined ? String(p[4]).padStart(2, '0') : "";
-          return h ? `${d}/${m}/${y} ${h}:${min}` : `${d}/${m}/${y}`;
+          let sec = p[5] !== undefined ? String(p[5]).padStart(2, '0') : "";
+          if (h !== "") {
+            return sec !== "" ? `${d}/${m}/${y} ${h}:${min}:${sec}` : `${d}/${m}/${y} ${h}:${min}`;
+          }
+          return `${d}/${m}/${y}`;
         }
       }
       return str;
@@ -164,44 +158,46 @@
         const rawData = JSON.parse(matches[1]);
         const rows = rawData.table.rows || [];
 
-        // 1. Cập nhật mốc thời gian từ cột I (ô I2/I1 - index 8)
-        try {
-          if (rows.length > 0 && rows[0].c && rows[0].c[8]) {
-            let updateVal = parseCell(rows[0].c[8]);
-            document.getElementById("lastUpdate").innerText = updateVal || "Theo thời gian thực";
-          } else {
-            document.getElementById("lastUpdate").innerText = "29/08/2026 10:51:21";
+        // Tìm giá trị ngày cập nhật đầu tiên có mặt ở cột I (index 8)
+        let foundUpdateDate = "";
+        for (let i = 0; i < rows.length; i++) {
+          let valI = rows[i].c && rows[i].c[8] ? parseCell(rows[i].c[8]) : "";
+          if (valI) {
+            foundUpdateDate = valI;
+            break;
           }
-        } catch(e) {
-          document.getElementById("lastUpdate").innerText = "29/08/2026 10:51:21";
         }
+        document.getElementById("lastUpdate").innerText = foundUpdateDate || "Chưa có ngày cập nhật";
 
-        // 2. Map dữ liệu theo cấu trúc cột mới:
-        // Cột A (0): MÃ ĐƠN VỊ | Cột B (1): MÃ ĐƠN VỊ MỚI | Cột C (2): TÊN ĐƠN VỊ
-        // Cột D (3): ĐỊA CHỈ LH | Cột E (4): MST | Cột F (5): NGÀY TĂNG 
-        // Cột G (6): CHUYÊN QUẢN THU | Cột H (7): SDT_CHUYÊN QUẢN THU
-        dataList = rows.map(row => {
-          const c = row.c || [];
-          let maMoi = parseCell(c[1]);
-          return {
-            maDV: parseCell(c[0]),         // Cột A: Mã cũ
-            maDVMoi: maMoi,                // Cột B: Mã mới
-            tenDV: parseCell(c[2]),        // Cột C: Tên đơn vị
-            diaChi: parseCell(c[3]),       // Cột D: Địa chỉ
-            mst: parseCell(c[4]),          // Cột E: MST
-            ngayTang: parseCell(c[5]),     // Cột F: Ngày tăng
-            chuyenQuan: parseCell(c[6]),   // Cột G: Chuyên quản Thu
-            sdtCQ: parseCell(c[7]),        // Cột H: SĐT Chuyên quản
-            hasNewCode: maMoi.length > 0   // Kiểm tra đã có mã mới chưa
-          };
-        });
+        // Cột A (0): Mã cũ | Cột B (1): Mã mới | Cột C (2): Tên DV
+        // Cột D (3): Địa chỉ | Cột E (4): MST | Cột F (5): Ngày tăng
+        // Cột G (6): Chuyên quản | Cột H (7): SĐT Chuyên quản
+        dataList = rows
+          .map(row => {
+            const c = row.c || [];
+            let maDV = parseCell(c[0]);
+            let maMoi = parseCell(c[1]);
+            let tenDV = parseCell(c[2]);
+            return {
+              maDV: maDV,
+              maDVMoi: maMoi,
+              tenDV: tenDV,
+              diaChi: parseCell(c[3]),
+              mst: parseCell(c[4]),
+              ngayTang: parseCell(c[5]),
+              chuyenQuan: parseCell(c[6]),
+              sdtCQ: parseCell(c[7]),
+              hasNewCode: maMoi.length > 0
+            };
+          })
+          .filter(item => item.maDV || item.maDVMoi || item.tenDV || item.mst);
 
         updateResultSummary();
       })
       .catch(err => {
         console.error("Lỗi:", err);
-        document.getElementById("results").innerHTML = 
-          `<p style='color: red; text-align: center; padding: 20px;'>❌ Lỗi kết nối dữ liệu: ${err.message}. Vui lòng kiểm tra lại quyền chia sẻ file Google Sheet!</p>`;
+        document.getElementById("results").innerHTML =
+          `<p style='color: red; text-align: center; padding: 20px;'>❌ Lỗi kết nối dữ liệu: ${err.message}</p>`;
       });
   };
 
@@ -211,13 +207,12 @@
     if (type === 'ALL') document.getElementById('filterAll').classList.add('active');
     if (type === 'HAS_NEW') document.getElementById('filterHasNew').classList.add('active');
     if (type === 'PENDING') document.getElementById('filterPending').classList.add('active');
-    
     searchData();
   }
 
   function updateResultSummary() {
     let countHasNew = dataList.filter(i => i.hasNewCode).length;
-    document.getElementById("results").innerHTML = 
+    document.getElementById("results").innerHTML =
       `<p style="color: #16a34a; font-size: 13.5px; text-align: center; background: #f0fdf4; padding: 10px; border-radius: 8px; border: 1px solid #bbf7d0;">
         ✅ Đã kết nối thành công <b>${dataList.length.toLocaleString()}</b> đơn vị (Trong đó: <b>${countHasNew.toLocaleString()}</b> đơn vị đã có Mã mới).
        </p>`;
@@ -237,14 +232,12 @@
       let keyword = document.getElementById("searchInput").value.toLowerCase().trim();
       let resultsDiv = document.getElementById("results");
 
-      // 1. Lọc theo nút filter chips
       let filtered = dataList.filter(item => {
         if (currentFilter === 'HAS_NEW' && !item.hasNewCode) return false;
         if (currentFilter === 'PENDING' && item.hasNewCode) return false;
         return true;
       });
 
-      // 2. Lọc theo từ khóa tìm kiếm
       if (keyword !== "") {
         filtered = filtered.filter(item => {
           let str = `${item.maDV} ${item.maDVMoi} ${item.tenDV} ${item.mst} ${item.diaChi} ${item.chuyenQuan} ${item.sdtCQ}`.toLowerCase();
@@ -258,7 +251,7 @@
       }
 
       if (filtered.length === 0) {
-        resultsDiv.innerHTML = "<p style='color: red; margin-top: 20px; text-align: center;'>❌ Không tìm thấy đơn vị phù hợp theo tiêu chí tìm kiếm.</p>";
+        resultsDiv.innerHTML = "<p style='color: red; margin-top: 20px; text-align: center;'>❌ Không tìm thấy đơn vị phù hợp.</p>";
         return;
       }
 
@@ -268,14 +261,14 @@
       let html = `<p style="font-size: 13px; color: var(--slate-600); margin-bottom: 12px;">Hiển thị <b>${displayList.length}</b> / <b>${filtered.length.toLocaleString()}</b> đơn vị tìm thấy:</p>`;
 
       displayList.forEach(item => {
-        let newCodeDisplay = item.hasNewCode 
+        let newCodeDisplay = item.hasNewCode
           ? `<span class="code-value-new">✨ ${item.maDVMoi} <button class="btn-copy" onclick="copyText('${item.maDVMoi}')">📋 Copy</button></span>`
           : `<span class="badge-pending">Chưa cập nhật</span>`;
 
         html += `
           <div class="result-card">
-            <div class="company-title">🏢 ${item.tenDV}</div>
-            
+            <div class="company-title">🏢 ${item.tenDV || 'Chưa có tên đơn vị'}</div>
+
             <div class="code-grid">
               <div class="code-item">
                 <span class="code-label">Mã Đơn vị Cũ</span>
@@ -292,13 +285,13 @@
             </div>
 
             <div class="info-row"><b>📍 Địa chỉ liên hệ:</b> ${item.diaChi || 'Chưa cập nhật'}</div>
-            <div class="info-row"><b>👮 Chuyên quản Thu:</b> <span style="color: var(--primary); font-weight: 600;">${item.chuyenQuan}</span> (${item.sdtCQ}) - <b>Ngày tăng:</b> ${item.ngayTang}</div>
+            <div class="info-row"><b>👮 Chuyên quản Thu:</b> <span style="color: var(--primary); font-weight: 600;">${item.chuyenQuan || '---'}</span> ${item.sdtCQ ? '(' + item.sdtCQ + ')' : ''} - <b>Ngày tăng:</b> ${item.ngayTang || '---'}</div>
           </div>
         `;
       });
 
       if (filtered.length > limit) {
-        html += `<p style="color: var(--slate-600); font-size: 13px; margin-top: 16px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập từ khóa chi tiết hơn để thu hẹp tìm kiếm.</i></p>`;
+        html += `<p style="color: var(--slate-600); font-size: 13px; margin-top: 16px; text-align: center;"><i>Đang hiển thị 50 kết quả đầu tiên. Vui lòng nhập từ khóa chi tiết hơn.</i></p>`;
       }
 
       resultsDiv.innerHTML = html;
